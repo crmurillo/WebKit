@@ -783,12 +783,12 @@ void GStreamerMediaEndpoint::doSetLocalDescription(const RTCSessionDescription* 
         }
 
         // Make sure each outgoing media source is configured using the proposed codec and linked to webrtcbin.
-        linkOutgoingSources(sdpMessage.get());
+        // linkOutgoingSources(sdpMessage.get());
     }
 
     if (!m_unlinkedOutgoingSources.isEmpty())
         GST_WARNING_OBJECT(m_pipeline.get(), "Unlinked outgoing sources lingering");
-    gst_element_set_state(m_pipeline.get(), GST_STATE_PLAYING);
+    // gst_element_set_state(m_pipeline.get(), GST_STATE_PLAYING);
 
     setDescription(initialDescription.get(), DescriptionType::Local, [protectedThis = Ref(*this), this, initialSDP = WTFMove(initialSDP), remoteDescriptionSdp = WTFMove(remoteDescriptionSdp), remoteDescriptionSdpType = WTFMove(remoteDescriptionSdpType)](const GstSDPMessage& message) {
         if (protectedThis->isStopped())
@@ -891,6 +891,9 @@ void GStreamerMediaEndpoint::doSetRemoteDescription(const RTCSessionDescription&
         // Make sure each outgoing media source is configured using the proposed codec and linked to webrtcbin.
         linkOutgoingSources(sdpMessage.get());
     }
+
+    if (GST_STATE(m_pipeline.get()) < GST_STATE_PLAYING)
+        gst_element_set_state(m_pipeline.get(), GST_STATE_PLAYING);
 
     setDescription(&description, DescriptionType::Remote, [protectedThis = Ref(*this), this, initialSDP = WTFMove(initialSDP), localDescriptionSdp = WTFMove(localDescriptionSdp), localDescriptionSdpType = WTFMove(localDescriptionSdpType)](const GstSDPMessage& message) {
         if (protectedThis->isStopped())
